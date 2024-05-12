@@ -1,6 +1,6 @@
 import subprocess
 import struct
-import argparse
+from args import parse_args 
 
 class MultipleEventFilesError(Exception):
     pass
@@ -18,16 +18,9 @@ def get_keyboard_device_filename() -> str:
         raise MultipleEventFilesError("Multiple event files found. Please specify event file as an argument.")
     return f"/dev/input/{event_file}" 
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--event-file", help="Keyboard event file. e.g /dev/input/event13",default=None)
-    args = parser.parse_args()
-    return args
-
 def main() -> None:
     args = parse_args()
-
-    device_file_path = ""
+    keys = args.keys
     if args.event_file:
        device_file_path = args.event_file 
     else:
@@ -36,7 +29,6 @@ def main() -> None:
         except MultipleEventFilesError as e:
             print(e)
             exit(1)
-
     device_file = open(device_file_path, "rb")
 
     counter = 0
@@ -48,9 +40,9 @@ def main() -> None:
     
         key_code = unpacked_data[5]
         key_value = unpacked_data[6]
-        if key_value == 1 and key_code in [26, 39, 40]:
+        if key_value == 1 and key_code in keys:
             counter += 1
         print(counter)
-    
+
 if __name__=="__main__":
     main()
