@@ -1,6 +1,12 @@
 import subprocess
 import struct
+import json
+from threading import Thread, Lock
+from time import sleep
+
+from typing import Dict
 from args import parse_args 
+
 
 class MultipleEventFilesError(Exception):
     pass
@@ -18,8 +24,19 @@ def get_keyboard_device_filename() -> str:
         raise MultipleEventFilesError("Multiple event files found. Please specify event file as an argument.")
     return f"/dev/input/{event_file}" 
 
+def write_to_file(filename: str, keys_dict: Dict[int, int], interval: int, lock: Lock) -> None:
+    while True:
+            lock.acquire()
+            print("DEBUG")
+            with open(filename, "w") as file:
+               json.dump(keys_dict, file)
+            lock.release()
+            sleep(interval)
+
 def main() -> None:
+    lock = Lock()
     args = parse_args()
+    interval = args.write_interval
     keys = args.keys
 
     # Hold the keys and their count in a dict
@@ -33,6 +50,13 @@ def main() -> None:
         except MultipleEventFilesError as e:
             print(e)
             exit(1)
+
+    write_thread = Thread(target=write_to_file, args=("output", keys_dict, interval, lock))
+    # Setting daemon to True kills the thread when main is killed.
+    # If files are open or not is not taken into consideration...
+    write_thread.daemon = True
+    write_thread.start()
+
     device_file = open(device_file_path, "rb")
 
     while True:
@@ -46,8 +70,10 @@ def main() -> None:
         key_code = unpacked_data[5]
         key_value = unpacked_data[6]
         if key_value == 1 and key_code in keys:
+            lock.acquire()
             keys_dict[key_code] += 1
             print(keys_dict) 
+            lock.release()
 
-if __name__=="__main__":
+if __name__ == "__main__":
     main()
