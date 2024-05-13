@@ -1,6 +1,7 @@
 import subprocess
 import struct
 import json
+import datetime
 from threading import Thread, Lock
 from time import sleep
 
@@ -32,8 +33,13 @@ def write_to_file(filename: str, keys_dict: Dict[int, int], interval: int, lock:
                json.dump(keys_dict, file)
             lock.release()
             sleep(interval)
-
+# TODO: Gracefully exit write_to_file on KeyboardInterrupt and other events
+# TODO: Name output file after time and date of program execution i.e session
+# TODO: Create a dir to store our session output in?
 def main() -> None:
+    now = datetime.datetime.now()
+    print(now)
+
     lock = Lock()
     args = parse_args()
     interval = args.write_interval
@@ -57,6 +63,7 @@ def main() -> None:
     write_thread.daemon = True
     write_thread.start()
 
+    # Open the event file in read-binary mode
     device_file = open(device_file_path, "rb")
 
     while True:
