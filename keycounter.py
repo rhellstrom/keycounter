@@ -21,6 +21,10 @@ def get_keyboard_device_filename() -> str:
 def main() -> None:
     args = parse_args()
     keys = args.keys
+
+    # Hold the keys and their count in a dict
+    keys_dict = {key: 0 for key in keys}
+
     if args.event_file:
        device_file_path = args.event_file 
     else:
@@ -31,18 +35,19 @@ def main() -> None:
             exit(1)
     device_file = open(device_file_path, "rb")
 
-    counter = 0
     while True:
         # kernel.org/doc/Documentation/input/input.txt
         # one entry is 24 bytes
         data = device_file.read(24);
         unpacked_data = struct.unpack('4IHHI', data)
     
+        # Key code represent the key pressed
+        # Key value if the is pressed or released. Act on press.
         key_code = unpacked_data[5]
         key_value = unpacked_data[6]
         if key_value == 1 and key_code in keys:
-            counter += 1
-        print(counter)
+            keys_dict[key_code] += 1
+            print(keys_dict) 
 
 if __name__=="__main__":
     main()
