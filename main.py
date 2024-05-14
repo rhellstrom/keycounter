@@ -15,7 +15,8 @@ def write_to_file(filename: str, keys_dict: Dict[int, int], interval: int, lock:
             lock.acquire()
             print("DEBUG")
             with open(filename, "w") as file:
-               json.dump(keys_dict, file)
+                pretty_dict = {"Keycode: " + str(k): "Count: " + str(v) for k, v in keys_dict.items()}
+                json.dump(pretty_dict, file)
             lock.release()
             sleep(interval)
 

@@ -13,7 +13,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--event-file", help="Keyboard event file. e.g /dev/input/event13", default=None)
     parser.add_argument("-o", "--output-file", help="Set output filename to something other than session datetime", default=None)
-    parser.add_argument("-i", "--write-interval", help="File update interval in seconds for writing current count to file", default=60)
+    parser.add_argument("-i", "--write-interval", type=int, help="File update interval in seconds for writing current count to file", default=60)
     parser.add_argument("-k", "--keys", type=parse_key_list, help="Comma-separated list of keys to count", required=True)
     args = parser.parse_args()
     return args
