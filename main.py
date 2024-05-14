@@ -18,22 +18,27 @@ def write_to_file(filename: str, keys_dict: Dict[int, int], interval: int, lock:
                json.dump(keys_dict, file)
             lock.release()
             sleep(interval)
+
+def output_filename(filename: str = "") -> str:
+    if filename:
+        return filename
+    else:
+        now = datetime.datetime.now()
+        return now.strftime("%Y-%m-%d--%H:%M")
+
 # TODO: Gracefully exit write_to_file on KeyboardInterrupt and other events
-# TODO: Name output file after time and date of program execution i.e session
 # TODO: Create a dir to store our session output in?
 def main() -> None:
-    now = datetime.datetime.now()
-    print(now)
-
     lock = Lock()
     args = parse_args()
-    interval = args.write_interval
+
     keys = args.keys
+    output_file = output_filename(args.output_file)
 
     # Hold the keys and their count in a dict
     keys_dict = {key: 0 for key in keys}
 
-    write_thread = Thread(target=write_to_file, args=("output", keys_dict, interval, lock))
+    write_thread = Thread(target=write_to_file, args=(output_file, keys_dict, args.write_interval, lock))
     # Setting daemon to True kills the thread when main is killed.
     # If files are open or not is not taken into consideration...
     write_thread.daemon = True
